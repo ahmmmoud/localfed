@@ -41,6 +41,33 @@ class DataGenerator:
         self.distributed = self.data.distributor().distribute_shards(num_clients, shards_per_client, min_size, max_size)
         return self.distributed
 
+    def distribute_shards_redundant(self, num_clients, shards_per_client, min_size, max_size, verbose=0):
+        clients_data = {}
+        xs = self.data.x.tolist()
+        ys = self.data.y.tolist()
+        unique_labels = list(iter(np.unique(ys)))
+        for i in range(num_clients):
+            client_data_size = random.randint(min_size, max_size)
+            selected_shards = random.sample(unique_labels[0:10], shards_per_client)
+            client_x = []
+            client_y = []
+            indexxx = 0
+            for index, shard in enumerate(selected_shards):
+                while len(client_y) / client_data_size < (index + 1) / shards_per_client:
+                    for inner_index, item in enumerate(ys):
+                        print(indexxx, "-")
+                        if item == shard and random.random() > 0.5:
+                            client_x.append(xs[inner_index])
+                            client_y.append(ys[inner_index])
+                            indexxx += 1
+                            print(indexxx, "+")
+                            break
+            clients_data[i] = DataContainer(client_x, client_y).as_tensor(self.xtt, self.ytt)
+            if verbose > 0:
+                print(f"client_{i} finished")
+        self.distributed = clients_data
+        return clients_data
+
     def distribute_continuous(self, num_clients, min_size, max_size):
         self.distributed = self.data.distributor().distribute_continuous(num_clients, min_size, max_size)
         return self.distributed
