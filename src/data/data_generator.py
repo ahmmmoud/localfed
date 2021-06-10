@@ -17,7 +17,7 @@ class DataGenerator:
         :param xtt: x tensor type, callable to transform the current type to the desired type, by default float
         :param ytt: y tensor type, callable to transform the current type to the desired type, by default long
         """
-        self.data = data_provider.collect().as_numpy()
+        self.data = data_provider.collect().shuffle().as_numpy()
         self.distributed = None
         self.xtt = xtt
         self.ytt = ytt
@@ -111,6 +111,23 @@ class DataGenerator:
             client_x = xs[data_pos:data_pos + client_data_size]
             client_y = ys[data_pos:data_pos + client_data_size]
             data_pos += len(client_x)
+            clients_data[i] = DataContainer(client_x, client_y).as_tensor(self.xtt, self.ytt)
+        self.distributed = clients_data
+        return clients_data
+
+    def distribute_size_redundant(self, num_clients, min_size, max_size):
+        clients_data = {}
+        xs = self.data.x.tolist()
+        ys = self.data.y.tolist()
+        data_pos = 0
+        for i in range(num_clients):
+            client_x = []
+            client_y = []
+            client_data_size = random.randint(min_size, max_size)
+            for j in range(client_data_size):
+                r = random.randint(0, len(xs)-client_data_size)
+                client_x.append(xs[r])
+                client_y.append(ys[r])
             clients_data[i] = DataContainer(client_x, client_y).as_tensor(self.xtt, self.ytt)
         self.distributed = clients_data
         return clients_data
