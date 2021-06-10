@@ -14,16 +14,16 @@ from src.federated.trainer_manager import SharedTrainerProvider
 logger = logging.getLogger('fog components')
 
 
-class FederatedFogTrainer(CPUChunkTrainer):
+class FederatedFogTrainer(CPUTrainer):
     def __init__(self):
         super().__init__()
         self.last_model_weights = None
 
     def train(self, model: nn.Module, train_data: DataContainer, context: FederatedLearning.Context,
               config: TrainerParams) -> Tuple[any, int]:
-        if self.last_model_weights is not None:
-            tools.load(model, self.last_model_weights)
-            logger.info('model loaded new data')
+        # if self.last_model_weights is not None:
+        #     tools.load(model, self.last_model_weights)
+        #     logger.info('model loaded new data')
         return super(FederatedFogTrainer, self).train(model, train_data, context, config)
 
 

@@ -27,25 +27,25 @@ from src.federated.trainer_manager import TrainerManager, SeqTrainerManager, Sha
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('main')
 
-data_file = '../../datasets/pickles/signs_red_300c_500mn_3000mx.pkl'
+# data_file = '../../datasets/pickles/mnist10k.pkl'
 
 logger.info('Generating Data --Started')
 
 # data_file = '../../datasets/pickles/signs_05per_200c_200mn_500mx.pkl'
-# dg = DataGenerator(PickleDataProvider('https://www.dropbox.com/s/p6zf16hb4pinswr/mnist10k.zip?dl=1'))
+dg = DataGenerator(PickleDataProvider('https://www.dropbox.com/s/nd25svv30chttln/mnist.zip?dl=1'))
 # # dg = DataContainer(x[0:100], y[0:100]).as_tensor()
-# client_data = dg.distribute_size(10, 50, 100)
+client_data = dg.distribute_size(100, 400, 400)
 # # dg.describe()
 # logger.info('Generating Data --Ended')
 
-dg = src.data.data_generator.load(data_file)
+# dg = src.data.data_generator.load(data_file)
 # dg = DataContainer(x[0:100], y[0:100]).as_tensor()
-client_data = dg.distributed
+# client_data = dg.distributed
 # dg.describe()
 logger.info('Generating Data --Ended')
 
-rounds = 15
-fog_providers = 1
+rounds = 8
+fog_providers = 5
 
 
 def get_accuracy(dataset):
@@ -63,15 +63,15 @@ def get_accuracy(dataset):
             metrics=metrics.AccLoss(batch_size=50, criterion=nn.CrossEntropyLoss()),
             client_selector=client_selectors.FederatedFogClients(build_federated_participants(fog, dataset)),
             trainers_data_dict=client_data,
-            initial_model=lambda: resnet56(43, 1, 32),
-            # initial_model=lambda: LogisticRegression(28 * 28, 10),
+            #initial_model=lambda: resnet56(10, 1, 32),
+            initial_model=lambda: LogisticRegression(28 * 28, 10),
             num_rounds=rounds,
             desired_accuracy=0.99,
             train_ratio=0.8,
         )
         federated.plug(plugins.FederatedLogger([Events.ET_TRAINER_SELECTED, Events.ET_ROUND_FINISHED]))
         federated.plug(plugins.FederatedTimer([Events.ET_ROUND_FINISHED]))
-        # federated.plug(plugins.FedPlot())
+        federated.plug(plugins.FedPlot())
         federated.plug(SendModelToClient(trainer_provider))
         federated.init()
         fogs.append(federated)
@@ -86,5 +86,5 @@ def get_accuracy(dataset):
 
 data = []
 data.append([get_accuracy(DS_with_federation), 'Our Approach'])
-data.append([get_accuracy(DS_no_federation), 'Static Approach'])
+# data.append([get_accuracy(DS_no_federation), 'Static Approach'])
 plotter(data, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)
