@@ -67,3 +67,17 @@ def kdd_100c_400min_400max():
         client_data = data_generator.distribute_size(100, 400, 400)
         data_generator.save(file_path)
         return client_data
+
+
+def signs_1c_4000min_4000max():
+    file_path = manifest.DATA_PATH + "signs_1c_4000min_4000max.pkl"
+    if os.path.exists(file_path):
+        logger.info(f'distributed data file exists, loading from {file_path}...')
+        return src.data.data_generator.load(file_path).get_distributed_data()
+    else:
+        logger.info(f'distributed data file does not exists, distributing into {file_path}...')
+        data_provider = PickleDataProvider('../../datasets/pickles/signs.pkl')
+        data_generator = DataGenerator(data_provider)
+        client_data = data_generator.distribute_size(1, 4000, 4000)
+        data_generator.save(file_path)
+        return client_data

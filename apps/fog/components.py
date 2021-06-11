@@ -9,7 +9,7 @@ from src.federated.components.trainers import CPUTrainer, CPUChunkTrainer
 from src.federated.events import FederatedEventPlug
 from src.federated.federated import FederatedLearning
 from src.federated.protocols import TrainerParams
-from src.federated.trainer_manager import SharedTrainerProvider
+from src.federated.components.trainer_manager import SharedTrainerProvider
 
 logger = logging.getLogger('fog components')
 
@@ -48,17 +48,17 @@ class SendModelToClient(FederatedEventPlug):
             self.trainer_provider.share_global_weights(tid, weights)
 
 
-def plotter(lines, axis_limit, x_label, y_label, rounds):
+def plotter(lines, x_label, y_label, rounds):
     import matplotlib.pyplot as plt
     for d in lines:
         plt.plot(d[0], label=d[1])
-    plt.axis(axis_limit)
+    # plt.axis(axis_limit)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.legend()
     plt.grid(True)
     plt.xticks(range(0, rounds))
-    plt.yticks(range(0, 100, 5))
+    # plt.yticks(range(0, 100, 5))
     plt.show()
 
 

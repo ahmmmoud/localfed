@@ -30,6 +30,6 @@ class FederatedFogClients(ClientSelector):
         selected_trainers = self.arr[round_id.round_id]
         res = []
         for t in selected_trainers:
-            res.append(t % 100)
-        return res
-        # return [0]
+            res.append(t % 200)
+        # return res
+        return [0]
