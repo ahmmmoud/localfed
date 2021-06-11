@@ -1,5 +1,7 @@
 import random
 from typing import List
+
+from src.federated.federated import FederatedLearning
 from src.federated.protocols import ClientSelector
 
 
@@ -15,7 +17,7 @@ class Random(ClientSelector):
     def select(self, trainer_ids: List[int], round_id: int) -> List[int]:
         select_size = self.num
         if self.num < 1:
-            select_size = int(self.num * len(trainer_ids))
+            select_size = self.num * len(trainer_ids)
         selected_trainers = random.sample(trainer_ids, select_size)
         return selected_trainers
 
@@ -24,7 +26,10 @@ class FederatedFogClients(ClientSelector):
     def __init__(self, arr):
         self.arr = arr
 
-    def select(self, trainer_ids: List[int], round_id: int) -> List[int]:
-        selected_trainers = self.arr[round_id]
-        return selected_trainers
-        # return [0]
+    def select(self, trainer_ids: List[int], round_id: FederatedLearning.Context) -> List[int]:
+        selected_trainers = self.arr[round_id.round_id]
+        res = []
+        for t in selected_trainers:
+            res.append(t % 200)
+        # return res
+        return [0]

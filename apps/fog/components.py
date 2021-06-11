@@ -5,25 +5,25 @@ from torch import nn
 
 from src import tools
 from src.data.data_container import DataContainer
-from src.federated.components.trainer_manager import SharedTrainerProvider
-from src.federated.components.trainers import TorchChunkTrainer
+from src.federated.components.trainers import CPUTrainer, CPUChunkTrainer
 from src.federated.events import FederatedEventPlug
 from src.federated.federated import FederatedLearning
 from src.federated.protocols import TrainerParams
+from src.federated.components.trainer_manager import SharedTrainerProvider
 
 logger = logging.getLogger('fog components')
 
 
-class FederatedFogTrainer(TorchChunkTrainer):
+class FederatedFogTrainer(CPUTrainer):
     def __init__(self):
         super().__init__()
         self.last_model_weights = None
 
     def train(self, model: nn.Module, train_data: DataContainer, context: FederatedLearning.Context,
               config: TrainerParams) -> Tuple[any, int]:
-        if self.last_model_weights is not None:
-            tools.load(model, self.last_model_weights)
-            logger.info('model loaded new data')
+        # if self.last_model_weights is not None:
+        #     tools.load(model, self.last_model_weights)
+        #     logger.info('model loaded new data')
         return super(FederatedFogTrainer, self).train(model, train_data, context, config)
 
 
@@ -48,17 +48,17 @@ class SendModelToClient(FederatedEventPlug):
             self.trainer_provider.share_global_weights(tid, weights)
 
 
-def plotter(lines, axis_limit, x_label, y_label, rounds):
+def plotter(lines, x_label, y_label, rounds):
     import matplotlib.pyplot as plt
     for d in lines:
         plt.plot(d[0], label=d[1])
-    plt.axis(axis_limit)
+    # plt.axis(axis_limit)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.legend()
     plt.grid(True)
     plt.xticks(range(0, rounds))
-    plt.yticks(range(0, 100, 5))
+    # plt.yticks(range(0, 100, 5))
     plt.show()
 
 

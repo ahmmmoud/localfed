@@ -26,8 +26,10 @@ class TorchTrainer(Trainer):
 
         epoch_loss = []
         for epoch in range(config.epochs):
+            logging.info(epoch)
             batch_loss = []
             for batch_idx, (x, labels) in enumerate(train_data.batch(config.batch_size)):
+                logging.info(batch_idx)
                 x = x.to(self.device)
                 labels = labels.to(self.device)
                 optimizer.zero_grad()
