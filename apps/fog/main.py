@@ -2,6 +2,7 @@ import logging
 import pickle
 from typing import List
 
+import torch
 from torch import nn
 
 import src
@@ -11,6 +12,7 @@ from apps.fog.components import FederatedFogTrainerProvider, SendModelToClient, 
 from libs.model.cv.cnn import CNN_OriginalFedAvg
 from libs.model.cv.resnet import resnet56
 from libs.model.linear.net import Net
+from src import manifest
 from src.data.data_container import DataContainer
 from src.data.data_loader import preload
 from src.federated import subscribers
@@ -27,19 +29,27 @@ from src.federated.subscribers import Timer
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('main')
 
-
 logger.info('Generating Data --Started')
 
-
+# file_path = manifest.DATA_PATH + "signs.pkl"
+# aaaa = src.data.data_generator.load(file_path)
+#
+# exit(0)
 # client_data = preload(f'signs_2shards_100c_600min_600max', 'signs', lambda dg: dg.distribute_shards(100, 2, 600, 600))
-client_data = preload(f'signs_300shards_1c_2000min_3000max', 'signs', lambda dg: dg.distribute_shards(1, 30, 2000, 3000))
-print(client_data)
-exit(1)
+# client_data=preload(f'signs_300shards_1c_2000min_3000max','signs', lambda dg: dg.distribute_shards(1, 30, 2000, 3000))
+client_data = preload(f'signs_1c_4000min_4000max', 'signs', lambda dg: dg.distribute_size(1, 4000, 4000))
 logger.info('Generating Data --Ended')
 
 rounds = 1
 fog_providers = 1
 
+
+def create_model():
+    # lr = LogisticRegression(28 * 28, 10)
+    lr = resnet56(43, 1, 32)
+    # lr.load_state_dict(torch.load('../../datasets/models/mnist_start'))
+    # lr.eval()
+    return lr
 
 def get_accuracy(dataset):
     trainer_provider = FederatedFogTrainerProvider()
@@ -74,10 +84,12 @@ def get_accuracy(dataset):
             fog: FederatedLearning
             fog.one_round()
             federated_fog_accuracy[_] += fog.context.history[_]['acc'] / fog_providers * 100
-    return federated_fog_accuracy
+    return federated_fog_accuracy, fogs[0].context.model
 
 
 data = list()
-data.append([get_accuracy(DS_with_federation), 'Our Approach'])
+our_approach = get_accuracy(DS_with_federation)
+data.append([our_approach[0], 'Our Approach'])
+torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start')
 # data.append([get_accuracy(DS_no_federation), 'Static Approach'])
 plotter(data, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)
