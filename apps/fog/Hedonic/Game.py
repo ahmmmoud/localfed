@@ -1,8 +1,8 @@
-from Federation import Federation
-from FogServer import FogServer
-from Preprocessing import DataPreprocessor
-from Provider import Provider
-from User import User
+from apps.fog.Hedonic.FogServer import FogServer
+from apps.fog.Hedonic.Preprocessing import DataPreprocessor
+from apps.fog.Hedonic.Provider import Provider
+from apps.fog.Hedonic.User import User
+from apps.fog.Hedonic.Federation import Federation
 
 
 def print_stats(providers):
@@ -14,60 +14,82 @@ def print_stats(providers):
     print('],', end='')
     print("\n")
 
+
+def get_feds(providers):
+    res = []
+    for p in providers:
+        p: Provider
+        res.append(p.get_available_users_by_federation())
+    return res
+
+
+def print_stats_feds(providers):
+    for p in providers:
+        p: Provider
+        print(p.id)
+        print('[', end='')
+        print(str(p.federation.members) + ",", end='')
+        print('],', end='')
+        print("\n")
+
+
 # latencies_no_fed = []
 # latencies_fed = []
-for i in range(20, 22):
-    print(i)
-    Provider.static_id = 0
-    User.static_id = 1
-    FogServer.static_id = 0
-    Federation.static_id = 0
-    providers, total_number_of_users = DataPreprocessor.get_providers_users(i, False)
+def get_federated_participants(start_time, end_time):
+    res = []
+    for i in range(start_time, end_time):
+        Provider.static_id = 0
+        User.static_id = 1
+        FogServer.static_id = 0
+        Federation.static_id = 0
+        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, False)
 
-    # def calculate_latency():
-    #     avg_delay_no_fed = 0
-    #     avg_delay_fed = 0
-    #     for p in providers:
-    #         usrs_no_fed = p.get_available_users()
-    #         usrs_fed = p.get_available_users_by_federation()
-    #         for u in p.users:
-    #             if u not in usrs_no_fed:
-    #                 avg_delay_no_fed += 75
-    #             else:
-    #                 avg_delay_no_fed += 40
-    #
-    #             if u not in usrs_fed:
-    #                 avg_delay_fed += 75
-    #             else:
-    #                 avg_delay_fed += 40
-    #     avg_delay_no_fed /= total_number_of_users
-    #     avg_delay_fed /= total_number_of_users
-    #     latencies_no_fed.append(avg_delay_no_fed)
-    #     latencies_fed.append(avg_delay_fed)
+        # def calculate_latency():
+        #     avg_delay_no_fed = 0
+        #     avg_delay_fed = 0
+        #     for p in providers:
+        #         usrs_no_fed = p.get_available_users()
+        #         usrs_fed = p.get_available_users_by_federation()
+        #         for u in p.users:
+        #             if u not in usrs_no_fed:
+        #                 avg_delay_no_fed += 75
+        #             else:
+        #                 avg_delay_no_fed += 40
+        #
+        #             if u not in usrs_fed:
+        #                 avg_delay_fed += 75
+        #             else:
+        #                 avg_delay_fed += 40
+        #     avg_delay_no_fed /= total_number_of_users
+        #     avg_delay_fed /= total_number_of_users
+        #     latencies_no_fed.append(avg_delay_no_fed)
+        #     latencies_fed.append(avg_delay_fed)
 
-    # print_stats(providers)
-    while True:
-        equilibrium = True
-        for p in providers:
-            federations = [f.federation for f in providers]
-            federations = list(set(federations))
-            changed = p.move_to_satisfactory_federation(federations)
-            if changed:
-                equilibrium = False
-        if equilibrium:
-            break
         # print_stats(providers)
-    print_stats(providers)
+        while True:
+            equilibrium = True
+            for p in providers:
+                federations = [f.federation for f in providers]
+                federations = list(set(federations))
+                changed = p.move_to_satisfactory_federation(federations)
+                if changed:
+                    equilibrium = False
+            if equilibrium:
+                break
+
+            # print_stats(providers)
+        print_stats(providers)
+        # print_stats_feds(providers)
+        res.append(get_feds(providers))
+    return res
+
+
+get_federated_participants(20,22)
+
 
     # calculate_latency()
 # print(latencies_no_fed)
 # print(latencies_fed)
-
-
-
-
-
-
 
 # for_avg_single = []
 # for_avg_fed = []
@@ -133,15 +155,6 @@ for i in range(20, 22):
 #     z1 = p.get_participants_rate() * len(p.users)
 #     z2 = p.get_participants_rate_by_federation() * len(p.users)
 #     print("pro", providers.index(p), "\t|\t", x, "\t|\t", y, "\t|\t", z1, z2, "\t|\t", p.federation.id)
-
-
-
-
-
-
-
-
-
 
 
 # p1_fs = FogServer(0, 0, 100)

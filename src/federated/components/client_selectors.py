@@ -31,5 +31,5 @@ class FederatedFogClients(ClientSelector):
         res = []
         for t in selected_trainers:
             res.append(t % 200)
-        # return res
-        return [0]
+        return res
+        # return [0]

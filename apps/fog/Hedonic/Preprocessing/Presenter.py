@@ -1,7 +1,7 @@
 import tkinter
 
-import User
-from Provider import Provider
+from apps.fog.Hedonic.Provider import Provider
+from apps.fog.Hedonic.User import User
 
 
 class Presenter:

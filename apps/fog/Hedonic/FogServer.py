@@ -1,5 +1,5 @@
-from Geolocationized import Geolocationized
-from User import User
+from apps.fog.Hedonic import User
+from apps.fog.Hedonic.Geolocationized import Geolocationized
 
 
 class FogServer(Geolocationized):

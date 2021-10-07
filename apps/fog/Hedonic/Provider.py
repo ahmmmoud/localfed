@@ -1,7 +1,7 @@
 from contextlib import suppress
 
-from Federation import Federation
-from FogServer import FogServer
+from apps.fog.Hedonic.Federation import Federation
+from apps.fog.Hedonic.FogServer import FogServer
 
 
 class Provider:
@@ -82,6 +82,7 @@ class Provider:
         if self.federation.get_member_size() == 1:
             raise Exception(str(self) + " already neutralized")
         else:
+            self.deviate_from_federation()
             return Federation(self)
 
     def join_federation(self, federation):

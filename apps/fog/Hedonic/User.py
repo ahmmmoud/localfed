@@ -1,4 +1,4 @@
-from Geolocationized import Geolocationized
+from apps.fog.Hedonic.Geolocationized import Geolocationized
 
 
 class User(Geolocationized):

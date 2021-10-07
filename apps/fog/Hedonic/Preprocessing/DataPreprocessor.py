@@ -2,10 +2,10 @@ import itertools
 import random
 from pprint import pprint
 
-from FogServer import FogServer
-from Preprocessing.Presenter import Presenter
-from Provider import Provider
-from User import User
+from apps.fog.Hedonic.FogServer import FogServer
+from apps.fog.Hedonic.Preprocessing.Presenter import Presenter
+from apps.fog.Hedonic.Provider import Provider
+from apps.fog.Hedonic.User import User
 
 file_path = "D:/Work/Azzam/Maria - amir Capstone/basicinterGrids/300/grid_1.tcl"
 file_line_start = 0
