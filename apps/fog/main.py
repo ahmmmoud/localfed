@@ -26,20 +26,20 @@ logger.info('Generating Data --Started')
 # exit(0)
 # client_data = preload(f'signs_2shards_100c_600min_600max', 'signs', lambda dg: dg.distribute_shards(100, 2, 600, 600))
 # client_data=preload(f'signs_40shards_1c_10000min_10000max','signs', lambda dg: dg.distribute_shards(1, 40, 10000, 10000))
-client_data = preload(f'signs_42shards_200c_10000min_10000max', 'signs',
+client_data = preload(f'signs_42shards_200c_1000min_1000max', 'signs',
                       lambda dg: dg.distribute_shards(200, 42, 1000, 1000))
 # client_data=preload(f'signs_20shards_1c_1000min_1000max','signs', lambda dg: dg.distribute_shards(1, 20, 1000, 1000))
 # client_data = preload(f'signs_1c_4000min_4000max', 'signs', lambda dg: dg.distribute_size(1, 4000, 4000))
 logger.info('Generating Data --Ended')
 
-rounds = 2
+rounds = 25
 fog_providers = 3
 
 
 def create_model():
     # lr = LogisticRegression(28 * 28, 10)
     lr = resnet56(43, 1, 32)
-    lr.load_state_dict(torch.load('../../datasets/models/signs_start_20shards_1c_1000min_1000max'))
+    lr.load_state_dict(torch.load('../../datasets/models/signs_start_20shards_1c_1000min_1000max', map_location=torch.device('cpu')))
     # lr.eval()
     return lr
 
@@ -81,9 +81,9 @@ def get_accuracy(dataset):
 
 
 data = list()
-our_approach = get_accuracy(get_federated_participants(20, 22))
+our_approach = get_accuracy(get_federated_participants(20, 50))
 
 data.append([our_approach[0], 'Our Approach'])
-# torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max')
+torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max')
 # data.append([get_accuracy(DS_no_federation), 'Static Approach'])
 plotter(data, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)

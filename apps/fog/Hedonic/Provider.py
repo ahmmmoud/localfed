@@ -1,3 +1,4 @@
+import math
 from contextlib import suppress
 
 from apps.fog.Hedonic.Federation import Federation
@@ -7,7 +8,7 @@ from apps.fog.Hedonic.FogServer import FogServer
 class Provider:
     static_id = 0
 
-    def __init__(self, fog_server: FogServer, users, satisfied_participants_rate):
+    def __init__(self, fog_server: FogServer, users, satisfied_participants_rate, all_resources, required_resources):
         self.id = Provider.static_id
         Provider.static_id += 1
         self.fog_server: FogServer = fog_server
@@ -16,6 +17,8 @@ class Provider:
         self.federation = None
         self.neutralize_federation()
         self.history = []
+        self.all_resources = all_resources
+        self.required_resources = required_resources
 
     def get_available_users(self):
         return self.fog_server.get_users_in_range(self.users)
@@ -98,6 +101,8 @@ class Provider:
         return str(self)
 
     def move_to_satisfactory_federation(self, federations):
+        if self.id == 6:
+            x = 123123
         if self.get_participants_rate() >= self.satisfied_participants_rate:
             if len(self.federation.members) == 1:
                 return False
@@ -108,11 +113,43 @@ class Provider:
         max_fed = None
         for fed in federations:
             fed_rate = self.get_explicitly_participants_rate_by_other_federation(fed)
-            if max_rate < fed_rate:
+            if max_rate < fed_rate and len(fed.members) < Federation.MAX_SIZE:
                 max_rate = fed_rate
                 max_fed = fed
+        if self.id == 6:
+            x = 123123
 
         if max_rate == 0:
+            return False
+
+        if max_fed == self.federation:
+            # print('didnt change')
+            return False
+
+        if self.is_fed_from_history(max_fed):
+            # print('history...', self.id)
+            return False
+        self.add_fed_to_history(max_fed)
+        # print(max_rate, max_fed)
+        self.deviate_from_federation()
+        self.join_federation(max_fed)
+        return True
+
+    def move_to_satisfactory_federation_profit(self, federations):
+        if self.required_resources == self.all_resources:
+            if len(self.federation.members) == 1:
+                return False
+            self.neutralize_federation()
+            return False
+        max_resources = math.inf
+        max_fed = None
+        for fed in federations:
+            fed_profit = fed.needed_resources()
+            if max_resources > abs(fed_profit) and len(fed.members) < Federation.MAX_SIZE:
+                max_resources = fed_profit
+                max_fed = fed
+
+        if max_resources == math.inf:
             return False
 
         if max_fed == self.federation:

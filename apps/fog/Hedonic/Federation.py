@@ -1,11 +1,18 @@
 class Federation:
     static_id = 0
+    MAX_SIZE = 4
 
     def __init__(self, fed_creator):
         self.id = Federation.static_id
         Federation.static_id += 1
         self.members = [fed_creator]
         fed_creator.federation = self
+
+    def needed_resources(self):
+        res = 0
+        for m in self.members:
+            res += m.all_resources - m.required_resources
+        return res
 
     def add_member(self, provider):
         if provider in self.members:

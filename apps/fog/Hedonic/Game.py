@@ -14,6 +14,12 @@ def print_stats(providers):
     print('],', end='')
     print("\n")
 
+def print_stats_number_participants(providers):
+    res = 0
+    for p in providers:
+        res += len(p.get_available_users_by_federation())
+    print(res)
+
 
 def get_feds(providers):
     res = []
@@ -26,16 +32,16 @@ def get_feds(providers):
 def print_stats_feds(providers):
     for p in providers:
         p: Provider
-        print(p.id)
-        print('[', end='')
-        print(str(p.federation.members) + ",", end='')
-        print('],', end='')
+        print(p.id, str(p.federation.members))
+        [print(str(len(a.get_available_users_by_federation())) + ",", end='') for a in p.federation.members]
         print("\n")
 
 
 # latencies_no_fed = []
 # latencies_fed = []
-def get_federated_participants(start_time, end_time):
+#formation_type = 0 : our approach
+#formation_type = 1 : profit approach (static hedonic game by Anglano)
+def get_federated_participants(start_time, end_time, formation_type):
     res = []
     for i in range(start_time, end_time):
         Provider.static_id = 0
@@ -70,21 +76,29 @@ def get_federated_participants(start_time, end_time):
             equilibrium = True
             for p in providers:
                 federations = [f.federation for f in providers]
-                federations = list(set(federations))
-                changed = p.move_to_satisfactory_federation(federations)
+                # federations = list(set(federations))
+                if formation_type == 0:
+                    changed = p.move_to_satisfactory_federation(federations)
+                elif formation_type == 1:
+                    changed = p.move_to_satisfactory_federation_profit(federations)
+                else:
+                    raise ValueError('unknown formation type')
                 if changed:
                     equilibrium = False
             if equilibrium:
                 break
 
             # print_stats(providers)
-        print_stats(providers)
+        # print_stats(providers)
+        # print_stats_number_participants(providers)
         # print_stats_feds(providers)
         res.append(get_feds(providers))
+    # print(res[0])
     return res
 
 
-get_federated_participants(20,22)
+get_federated_participants(25,30,0)
+get_federated_participants(25,30,1)
 
 
     # calculate_latency()

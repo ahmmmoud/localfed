@@ -1,4 +1,5 @@
 import itertools
+import os
 import random
 from pprint import pprint
 
@@ -7,8 +8,11 @@ from apps.fog.Hedonic.Preprocessing.Presenter import Presenter
 from apps.fog.Hedonic.Provider import Provider
 from apps.fog.Hedonic.User import User
 
-file_path = "D:/Work/Azzam/Maria - amir Capstone/basicinterGrids/300/grid_1.tcl"
+__location__ = os.path.realpath(
+    os.path.join(os.getcwd(), os.path.dirname(__file__)))
+file_path = __location__ + "\grid_1.tcl"
 file_line_start = 0
+
 
 #
 # def extract_users(time):
@@ -103,6 +107,7 @@ def extract_users(time):
         objectified_users.append(User(r[2], r[3]))
     return result, objectified_users
 
+
 def create_providers(users):
     providers = []
     i1 = i2 = 0
@@ -114,7 +119,12 @@ def create_providers(users):
             users_objectified = []
             for u in users[users_index]:
                 users_objectified.append(u)
-            providers.append(Provider(FogServer(xx[i1], xx[i2], 500), users_objectified, 0.2))
+            all_resources = 10
+            required_resources = [9,10,11]
+            index = 0
+            providers.append(
+                Provider(FogServer(xx[i1], xx[i2], 500), users_objectified, 0.2, all_resources, required_resources[index%3]))
+            index += 1
             i2 += 1
             users_index += 1
         i1 += 1

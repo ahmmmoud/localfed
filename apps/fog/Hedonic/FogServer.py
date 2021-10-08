@@ -17,5 +17,5 @@ class FogServer(Geolocationized):
         for u in users:
             u: User
             if self.get_distance(u) <= self.radius:
-                res.append(u)
+                res.append(u.id)
         return res
