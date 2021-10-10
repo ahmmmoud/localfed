@@ -1,3 +1,11 @@
+import sys
+from os.path import dirname
+
+
+sys.path.append(dirname(__file__) + '../../../')
+from src import manifest
+print(manifest.ROOT_PATH)
+
 import logging
 import torch
 from torch import nn
@@ -32,14 +40,14 @@ client_data = preload(f'signs_42shards_200c_1000min_1000max', 'signs',
 # client_data = preload(f'signs_1c_4000min_4000max', 'signs', lambda dg: dg.distribute_size(1, 4000, 4000))
 logger.info('Generating Data --Ended')
 
-rounds = 25
+rounds = 15
 fog_providers = 3
 
 
 def create_model():
     # lr = LogisticRegression(28 * 28, 10)
     lr = resnet56(43, 1, 32)
-    lr.load_state_dict(torch.load('../../datasets/models/signs_start_20shards_1c_1000min_1000max', map_location=torch.device('cpu')))
+    lr.load_state_dict(torch.load('../../datasets/models/signs_start_20shards_1c_1000min_1000max'))
     # lr.eval()
     return lr
 
@@ -81,9 +89,12 @@ def get_accuracy(dataset):
 
 
 data = list()
-our_approach = get_accuracy(get_federated_participants(20, 50))
+our_approach = get_accuracy(get_federated_participants(20, 50, 0))
+other_approach = get_accuracy(get_federated_participants(20, 50, 1))
 
 data.append([our_approach[0], 'Our Approach'])
-torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max')
+data.append([other_approach[0], 'Other Approach'])
+torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max_ours')
+torch.save(other_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max')
 # data.append([get_accuracy(DS_no_federation), 'Static Approach'])
 plotter(data, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)

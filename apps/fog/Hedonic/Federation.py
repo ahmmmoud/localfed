@@ -8,7 +8,7 @@ class Federation:
         self.members = [fed_creator]
         fed_creator.federation = self
 
-    def needed_resources(self):
+    def excess_resources(self):
         res = 0
         for m in self.members:
             res += m.all_resources - m.required_resources

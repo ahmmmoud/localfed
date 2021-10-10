@@ -90,15 +90,15 @@ def get_federated_participants(start_time, end_time, formation_type):
 
             # print_stats(providers)
         # print_stats(providers)
-        # print_stats_number_participants(providers)
+        print_stats_number_participants(providers)
         # print_stats_feds(providers)
         res.append(get_feds(providers))
-    # print(res[0])
+    print(res[0])
     return res
 
-
-get_federated_participants(25,30,0)
-get_federated_participants(25,30,1)
+#
+# get_federated_participants(30,35,0)
+# get_federated_participants(30,35,1)
 
 
     # calculate_latency()

@@ -141,11 +141,11 @@ class Provider:
                 return False
             self.neutralize_federation()
             return False
-        max_resources = math.inf
-        max_fed = None
+        max_resources = self.federation.excess_resources()
+        max_fed = self.federation
         for fed in federations:
-            fed_profit = fed.needed_resources()
-            if max_resources > abs(fed_profit) and len(fed.members) < Federation.MAX_SIZE:
+            fed_profit = fed.excess_resources()
+            if max_resources < fed_profit and len(fed.members) < Federation.MAX_SIZE:
                 max_resources = fed_profit
                 max_fed = fed
 
