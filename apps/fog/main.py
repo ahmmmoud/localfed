@@ -1,11 +1,9 @@
 import sys
 from os.path import dirname
-
-
 sys.path.append(dirname(__file__) + '../../../')
-from src import manifest
-print(manifest.ROOT_PATH)
 
+
+from datetime import datetime
 import logging
 import torch
 from torch import nn
@@ -40,8 +38,8 @@ client_data = preload(f'signs_42shards_200c_1000min_1000max', 'signs',
 # client_data = preload(f'signs_1c_4000min_4000max', 'signs', lambda dg: dg.distribute_size(1, 4000, 4000))
 logger.info('Generating Data --Ended')
 
-rounds = 15
-fog_providers = 3
+rounds = 20
+fog_providers = 6
 
 
 def create_model():
@@ -88,13 +86,18 @@ def get_accuracy(dataset):
     return federated_fog_accuracy, fogs[0].context.model
 
 
-data = list()
-our_approach = get_accuracy(get_federated_participants(20, 50, 0))
-other_approach = get_accuracy(get_federated_participants(20, 50, 1))
 
+now = datetime.now()
+current_dt = now.strftime("%m-%d-%Y_%H-%M-%S")
+our_approach = get_accuracy(get_federated_participants(20, 50, 0))
+torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max_ours_' + current_dt)
+other_approach = get_accuracy(get_federated_participants(20, 50, 1))
+torch.save(other_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max_' + current_dt)
+
+
+
+data = list()
 data.append([our_approach[0], 'Our Approach'])
 data.append([other_approach[0], 'Other Approach'])
-torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max_ours')
-torch.save(other_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max')
 # data.append([get_accuracy(DS_no_federation), 'Static Approach'])
 plotter(data, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)

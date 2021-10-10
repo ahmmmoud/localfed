@@ -90,10 +90,10 @@ def get_federated_participants(start_time, end_time, formation_type):
 
             # print_stats(providers)
         # print_stats(providers)
-        print_stats_number_participants(providers)
+        # print_stats_number_participants(providers)
         # print_stats_feds(providers)
         res.append(get_feds(providers))
-    print(res[0])
+    # print(res[0])
     return res
 
 #
