@@ -6,7 +6,7 @@ from torch import nn
 from src import tools
 from src.data.data_container import DataContainer
 from src.federated.components.trainer_manager import SharedTrainerProvider
-from src.federated.components.trainers import TorchChunkTrainer
+from src.federated.components.trainers import TorchChunkTrainer, TorchTrainer
 from src.federated.events import FederatedEventPlug
 from src.federated.federated import FederatedLearning
 from src.federated.protocols import TrainerParams
@@ -14,7 +14,7 @@ from src.federated.protocols import TrainerParams
 logger = logging.getLogger('fog components')
 
 
-class FederatedFogTrainer(TorchChunkTrainer):
+class FederatedFogTrainer(TorchTrainer):
     def __init__(self):
         super().__init__()
         self.last_model_weights = None

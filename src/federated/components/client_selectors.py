@@ -23,13 +23,14 @@ class Random(ClientSelector):
 
 
 class FederatedFogClients(ClientSelector):
-    def __init__(self, arr):
+    def __init__(self, arr, max_client_id):
         self.arr = arr
+        self.max_client_id = max_client_id
 
     def select(self, trainer_ids: List[int], round_id: FederatedLearning.Context) -> List[int]:
         selected_trainers = self.arr[round_id.round_id]
         res = []
         for t in selected_trainers:
-            res.append(t % 200)
+            res.append(t % self.max_client_id)
         return res
         # return [0]

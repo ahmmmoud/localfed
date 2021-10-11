@@ -1,7 +1,7 @@
 import sys
 from os.path import dirname
-sys.path.append(dirname(__file__) + '../../../')
 
+sys.path.append(dirname(__file__) + '../../../')
 
 from datetime import datetime
 import logging
@@ -21,30 +21,28 @@ from src.federated.federated import FederatedLearning
 from src.federated.protocols import TrainerParams
 from src.federated.subscribers import Timer
 
+rounds = 2
+fog_providers = 1
+CLIENTS = 200
+LABELS = 42
+DATA_PER_CLIENT = 10
+DATASET = f'signs_' + str(LABELS) + 'shards_' + str(CLIENTS) + 'c_' + str(DATA_PER_CLIENT) + 'min_' + str(
+    DATA_PER_CLIENT) + 'max'
+DISPLAY_OUR_METHOD = 1
+DISPLAY_OTHER_METHOD = 1
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('main')
 
 logger.info('Generating Data --Started')
-
-# file_path = manifest.DATA_PATH + "signs.pkl"
-# aaaa = src.data.data_generator.load(file_path)
-#
-# exit(0)
-# client_data = preload(f'signs_2shards_100c_600min_600max', 'signs', lambda dg: dg.distribute_shards(100, 2, 600, 600))
-# client_data=preload(f'signs_40shards_1c_10000min_10000max','signs', lambda dg: dg.distribute_shards(1, 40, 10000, 10000))
-client_data = preload(f'signs_42shards_200c_1000min_1000max', 'signs',
-                      lambda dg: dg.distribute_shards(200, 42, 1000, 1000))
-# client_data=preload(f'signs_20shards_1c_1000min_1000max','signs', lambda dg: dg.distribute_shards(1, 20, 1000, 1000))
-# client_data = preload(f'signs_1c_4000min_4000max', 'signs', lambda dg: dg.distribute_size(1, 4000, 4000))
+client_data = preload(DATASET, 'signs',
+                      lambda dg: dg.distribute_shards(CLIENTS, LABELS, DATA_PER_CLIENT, DATA_PER_CLIENT))
 logger.info('Generating Data --Ended')
-
-rounds = 20
-fog_providers = 6
 
 
 def create_model():
     # lr = LogisticRegression(28 * 28, 10)
-    lr = resnet56(43, 1, 32)
+    lr = resnet56(42, 1, 32)
     lr.load_state_dict(torch.load('../../datasets/models/signs_start_20shards_1c_1000min_1000max'))
     # lr.eval()
     return lr
@@ -62,8 +60,8 @@ def get_accuracy(dataset):
             trainer_manager=SeqTrainerManager(trainer_provider),
             trainer_config=trainer_params,
             aggregator=aggregators.AVGAggregator(),
-            metrics=metrics.AccLoss(batch_size=50, criterion=nn.CrossEntropyLoss()),
-            client_selector=client_selectors.FederatedFogClients(build_federated_participants(fog, dataset)),
+            metrics=metrics.AccLoss(batch_size=10, criterion=nn.CrossEntropyLoss()),
+            client_selector=client_selectors.FederatedFogClients(build_federated_participants(fog, dataset), CLIENTS),
             trainers_data_dict=client_data,
             initial_model=create_model,
             # initial_model=lambda: LogisticRegression(28 * 28, 10),
@@ -86,18 +84,21 @@ def get_accuracy(dataset):
     return federated_fog_accuracy, fogs[0].context.model
 
 
-
 now = datetime.now()
-current_dt = now.strftime("%m-%d-%Y_%H-%M-%S")
-our_approach = get_accuracy(get_federated_participants(20, 50, 0))
-torch.save(our_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max_ours_' + current_dt)
-other_approach = get_accuracy(get_federated_participants(20, 50, 1))
-torch.save(other_approach[1].state_dict(), '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_42shards_200c_1000min_1000max_' + current_dt)
-
-
-
+current_dt = now.strftime("_%m-%d-%Y_%H-%M-%S")
 data = list()
-data.append([our_approach[0], 'Our Approach'])
-data.append([other_approach[0], 'Other Approach'])
-# data.append([get_accuracy(DS_no_federation), 'Static Approach'])
+
+if DISPLAY_OUR_METHOD == 1:
+    our_approach = get_accuracy(get_federated_participants(20, 21 + rounds, 0))
+    torch.save(our_approach[1].state_dict(),
+               '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_' + DATASET + "_ours" + current_dt)
+    data.append([our_approach[0], 'Our Approach'])
+
+if DISPLAY_OTHER_METHOD == 1:
+    other_approach = get_accuracy(get_federated_participants(20, 21 + rounds, 1))
+    torch.save(other_approach[1].state_dict(),
+               '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_' + DATASET + "_ours" + current_dt)
+    data.append([other_approach[0], 'Other Approach'])
+
+print(data)
 plotter(data, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)
