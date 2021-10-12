@@ -1,6 +1,6 @@
 class Federation:
     static_id = 0
-    MAX_SIZE = 4
+    MAX_SIZE = 100
 
     def __init__(self, fed_creator):
         self.id = Federation.static_id
