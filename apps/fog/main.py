@@ -25,9 +25,9 @@ rounds = 2
 fog_providers = 1
 CLIENTS = 200
 LABELS = 42
-DATA_PER_CLIENT = 10
-DATASET = f'signs_' + str(LABELS) + 'shards_' + str(CLIENTS) + 'c_' + str(DATA_PER_CLIENT) + 'min_' + str(
-    DATA_PER_CLIENT) + 'max'
+DATA_PER_CLIENT = 100
+DATASET = f'signs_{LABELS}shards_{CLIENTS}c_{DATA_PER_CLIENT}min_{DATA_PER_CLIENT}max'
+print(DATASET)
 DISPLAY_OUR_METHOD = 1
 DISPLAY_OTHER_METHOD = 1
 
@@ -42,7 +42,7 @@ logger.info('Generating Data --Ended')
 
 def create_model():
     # lr = LogisticRegression(28 * 28, 10)
-    lr = resnet56(42, 1, 32)
+    lr = resnet56(43, 1, 32)
     lr.load_state_dict(torch.load('../../datasets/models/signs_start_20shards_1c_1000min_1000max'))
     # lr.eval()
     return lr
@@ -76,29 +76,36 @@ def get_accuracy(dataset):
         federated.init()
         fogs.append(federated)
     federated_fog_accuracy = [0] * rounds
+    federated_fog_loss = [0] * rounds
     for _ in range(rounds):
         for fog in fogs:
             fog: FederatedLearning
             fog.one_round()
             federated_fog_accuracy[_] += fog.context.history[_]['acc'] / fog_providers * 100
-    return federated_fog_accuracy, fogs[0].context.model
+            federated_fog_loss[_] += fog.context.history[_]['loss'] / fog_providers
+    return federated_fog_accuracy, federated_fog_loss, fogs[0].context.model
 
 
 now = datetime.now()
 current_dt = now.strftime("_%m-%d-%Y_%H-%M-%S")
-data = list()
+data_acc = list()
+data_loss = list()
 
 if DISPLAY_OUR_METHOD == 1:
-    our_approach = get_accuracy(get_federated_participants(20, 21 + rounds, 0))
-    torch.save(our_approach[1].state_dict(),
+    our_approach = get_accuracy(get_federated_participants(30, 31 + rounds, 0))
+    torch.save(our_approach[2].state_dict(),
                '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_' + DATASET + "_ours" + current_dt)
-    data.append([our_approach[0], 'Our Approach'])
+    data_acc.append([our_approach[0], 'Our Approach'])
+    data_loss.append([our_approach[1], 'Our Approach'])
 
 if DISPLAY_OTHER_METHOD == 1:
-    other_approach = get_accuracy(get_federated_participants(20, 21 + rounds, 1))
-    torch.save(other_approach[1].state_dict(),
+    other_approach = get_accuracy(get_federated_participants(30, 31 + rounds, 1))
+    torch.save(other_approach[2].state_dict(),
                '../../datasets/models/signs_start_20shards_1c_1000min_1000max_trained_' + DATASET + "_ours" + current_dt)
-    data.append([other_approach[0], 'Other Approach'])
+    data_acc.append([other_approach[0], 'Other Approach'])
+    data_loss.append([other_approach[1], 'Other Approach'])
 
-print(data)
-plotter(data, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)
+print(data_acc)
+plotter(data_acc, [0, rounds, 0, 100], 'Round', 'Average Model Accuracy (%)', rounds)
+print(data_loss)
+plotter(data_loss, [0, rounds, 0, 100], 'Round', 'Average Model Loss', rounds)
