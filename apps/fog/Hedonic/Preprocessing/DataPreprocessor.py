@@ -10,8 +10,8 @@ from apps.fog.Hedonic.User import User
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
-file_path = __location__ + "\grid_1.tcl"
-# file_path = __lfile_path = "/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/apps/fog/Hedonic/Preprocessing" + "/grid_1.tcl"
+# file_path = __location__ + "\grid_1.tcl"
+file_path = __lfile_path = "/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/apps/fog/Hedonic/Preprocessing" + "/grid_1.tcl"
 file_line_start = 0
 
 def extract_users(time):

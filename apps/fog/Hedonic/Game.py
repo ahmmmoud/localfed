@@ -14,11 +14,15 @@ def print_stats(providers):
     print('],', end='')
     print("\n")
 
-def print_stats_number_participants(providers):
+def get_stats_number_participants(providers):
     res = 0
+    index = 0
     for p in providers:
+        if index == 3:
+            break
+        index += 1
         res += len(p.get_available_users_by_federation())
-    print(res)
+    return res
 
 
 def get_feds(providers):
@@ -43,6 +47,8 @@ def print_stats_feds(providers):
 #formation_type = 1 : profit approach (static hedonic game by Anglano)
 def get_federated_participants(start_time, end_time, formation_type):
     res = []
+    total_participants = 0
+
     for i in range(start_time, end_time):
         Provider.static_id = 0
         User.static_id = 1
@@ -71,35 +77,39 @@ def get_federated_participants(start_time, end_time, formation_type):
         #     latencies_no_fed.append(avg_delay_no_fed)
         #     latencies_fed.append(avg_delay_fed)
 
+
         # print_stats(providers)
-        while True:
-            equilibrium = True
-            for p in providers:
-                federations = [f.federation for f in providers]
-                # federations = list(set(federations))
-                if formation_type == 0:
-                    changed = p.move_to_satisfactory_federation(federations)
-                elif formation_type == 1:
-                    changed = p.move_to_satisfactory_federation_profit(federations)
-                else:
-                    raise ValueError('unknown formation type')
-                if changed:
-                    equilibrium = False
-            if equilibrium:
-                break
+        if formation_type != 2:
+            while True:
+                equilibrium = True
+                for p in providers:
+                    federations = [f.federation for f in providers]
+                    # federations = list(set(federations))
+                    if formation_type == 0:
+                        changed = p.move_to_satisfactory_federation(federations)
+                    elif formation_type == 1:
+                        changed = p.move_to_satisfactory_federation_profit(federations)
+                    else:
+                        raise ValueError('unknown formation type')
+                    if changed:
+                        equilibrium = False
+                if equilibrium:
+                    break
 
             # print_stats(providers)
         # print_stats(providers)
-        print_stats_number_participants(providers)
-        print_stats_feds(providers)
+        total_participants += get_stats_number_participants(providers)
+        # print_stats_feds(providers)
         res.append(get_feds(providers))
     # print(res[0])
+    # print(total_participants)
     return res
 
 #
-get_federated_participants(30,31,0)
-get_federated_participants(30,31,1)
-
+a = get_federated_participants(30,61,0)
+b = get_federated_participants(30,61,1)
+c = get_federated_participants(30,61,2)
+# print(a, b, c)
 
     # calculate_latency()
 # print(latencies_no_fed)
