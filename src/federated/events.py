@@ -1,5 +1,4 @@
 import typing
-from abc import ABC
 
 from src.apis.broadcaster import Subscriber
 
@@ -16,6 +15,7 @@ class Events:
     ET_FED_END = 'federated_learning_end'
     ET_TRAINER_STARTED = 'trainer_started'
     ET_TRAINER_FINISHED = 'trainer_ended'
+    ET_MODEL_STATUS = 'model_status'
 
 
 class FederatedEventPlug(Subscriber):
@@ -110,6 +110,14 @@ class FederatedEventPlug(Subscriber):
        """
         pass
 
+    def on_model_status_eval(self, params):
+        """
+
+         :param params: params['model_status'], params['context']
+         :return:
+         """
+        pass
+
     def force(self) -> []:
         return []
 
@@ -126,4 +134,5 @@ class FederatedEventPlug(Subscriber):
             Events.ET_FED_END: self.on_federated_ended,
             Events.ET_TRAINER_STARTED: self.on_trainer_start,
             Events.ET_TRAINER_FINISHED: self.on_trainer_end,
+            Events.ET_MODEL_STATUS: self.on_model_status_eval,
         }

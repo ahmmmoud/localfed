@@ -3,15 +3,15 @@ import sys
 
 
 sys.path.append('../../')
-
-from libs.model.cv.resnet import resnet56
-from torch import nn
-import libs.model.cv.cnn
 from src.federated.subscribers.logger import FederatedLogger
 from src.federated.subscribers.timer import Timer
-from src.apis import lambdas
-from src.data import data_loader
+from src.federated.subscribers.wandb_logger import WandbLogger
+from torch import nn
+from src.data.data_distributor import LabelDistributor
+from src.data.data_loader import preload
+from libs.model.linear.lr import LogisticRegression
 from src.federated.components import metrics, client_selectors, aggregators, trainers
+from src.federated import subscribers
 from src.federated.federated import Events
 from src.federated.federated import FederatedLearning
 from src.federated.protocols import TrainerParams
@@ -21,21 +21,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('main')
 
 logger.info('Generating Data --Started')
-client_data = data_loader.cifar10_10shards_100c_400min_400max()
+dist = LabelDistributor(100, 10, 600, 600)
+client_data = preload('mnist', dist)
 logger.info('Generating Data --Ended')
-
-
-def create_model(name):
-    if name == 'resnet':
-        return resnet56(10, 3, 32)
-    else:
-        global client_data
-        # cifar10 data reduced to 1 dimension from 32,32,3. cnn32 model requires the image shape to be 3,32,32
-        client_data = client_data.map(lambdas.reshape((-1, 32, 32, 3))).map(lambdas.transpose((0, 3, 1, 2)))
-        return libs.model.cv.cnn.Cifar10Model()
-
-
-initialize_model = create_model('cnn')
 
 trainer_params = TrainerParams(trainer_class=trainers.TorchTrainer, batch_size=50, epochs=1, optimizer='sgd',
                                criterion='cel', lr=0.1)
@@ -47,12 +35,15 @@ federated = FederatedLearning(
     metrics=metrics.AccLoss(batch_size=50, criterion=nn.CrossEntropyLoss()),
     client_selector=client_selectors.Random(0.2),
     trainers_data_dict=client_data,
-    initial_model=lambda: initialize_model,
-    num_rounds=50,
+    initial_model=lambda: LogisticRegression(28 * 28, 10),
+    num_rounds=5,
     desired_accuracy=0.99,
+    accepted_accuracy_margin=0.01
 )
+
 federated.add_subscriber(FederatedLogger([Events.ET_TRAINER_SELECTED, Events.ET_ROUND_FINISHED]))
 federated.add_subscriber(Timer([Timer.FEDERATED, Timer.ROUND]))
+federated.add_subscriber(WandbLogger(config={'samira': '2'}))
 logger.info("----------------------")
 logger.info("start federated 1")
 logger.info("----------------------")

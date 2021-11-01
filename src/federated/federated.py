@@ -1,4 +1,5 @@
 import copy
+import logging
 import math
 import time
 from collections import defaultdict
@@ -9,24 +10,24 @@ import src
 from src import tools
 from src.apis.broadcaster import Broadcaster
 from src.data.data_container import DataContainer
-from src.federated.events import Events, FederatedEventPlug
-from src.federated.protocols import Aggregator, ClientSelector, ModelInfer
+from src.federated.events import Events
+from src.federated.protocols import Aggregator, ClientSelector, ModelInfer, TrainerParams
 from src.federated.components.trainer_manager import TrainerManager
 
 
 class FederatedLearning(Broadcaster):
 
-    def __init__(self, trainer_manager: TrainerManager, trainer_config, aggregator: Aggregator,
+    def __init__(self, trainer_manager: TrainerManager, trainer_config: TrainerParams, aggregator: Aggregator,
                  client_selector: ClientSelector, metrics: ModelInfer, trainers_data_dict: Dict[int, DataContainer],
                  initial_model: callable, num_rounds=10, desired_accuracy=0.9, train_ratio=0.8,
-                 ignore_acc_decrease=False, test_data: DataContainer = None, **kwargs):
+                 accepted_accuracy_margin=False, test_data: DataContainer = None, **kwargs):
         super().__init__()
         self.trainer_config = trainer_config
         self.trainer_manager = trainer_manager
         self.aggregator = aggregator
         self.client_selector = client_selector
         self.metrics = metrics
-        self.ignore_acc_decrease = ignore_acc_decrease
+        self.accepted_accuracy_margin = accepted_accuracy_margin
         self.trainers_data_dict = trainers_data_dict
         self.desired_accuracy = desired_accuracy
         self.initial_model = initial_model
@@ -35,10 +36,11 @@ class FederatedLearning(Broadcaster):
         self.args = kwargs
         self.events = {}
         self._check_params()
-        self.context = FederatedLearning.Context()
+        self.context = FederatedLearning.Context(self)
         self.test_data = test_data
         self.trainers_train = self.trainers_data_dict
         self.is_finished = False
+        self.logger = logging.getLogger('FederatedLearning')
         if self.test_data is None:
             self.test_data = {}
             self.trainers_train = {}
@@ -71,16 +73,20 @@ class FederatedLearning(Broadcaster):
         self.broadcast(Events.ET_ROUND_START, round=self.context.round_id)
         trainers_ids = self.client_selector.select(list(self.trainers_data_dict.keys()), self.context)
         if len(trainers_ids) == 0:
-            Exception('client selected return 0 training for the current rounds')
+            Exception('no client selected for the current rounds')
         self.broadcast(Events.ET_TRAINER_SELECTED, trainers_ids=trainers_ids)
         trainers_train_data = tools.dict_select(trainers_ids, self.trainers_train)
         self.broadcast(Events.ET_TRAIN_START, trainers_data=trainers_train_data)
         trainers_weights, sample_size_dict = self.train(trainers_train_data)
         self.broadcast(Events.ET_TRAIN_END, trainers_weights=trainers_weights, sample_size=sample_size_dict)
         global_weights = self.aggregator.aggregate(trainers_weights, sample_size_dict, self.context.round_id)
-        tools.load(self.context.model, global_weights)
+        temporary_model = self.context.model_copy(global_weights)
         self.broadcast(Events.ET_AGGREGATION_END, global_weights=global_weights, global_model=self.context.model)
-        accuracy, loss, local_acc, local_loss = self.infer(self.context.model, self.test_data)
+        accuracy, loss, local_acc, local_loss = self.infer(temporary_model, self.test_data)
+        model_status = self.context.update_model(temporary_model, accuracy, self.accepted_accuracy_margin)
+        self.broadcast(Events.ET_MODEL_STATUS, model_status=model_status, accuracy=accuracy)
+        accuracy = accuracy if model_status else self.context.highest_accuracy()
+        self.context.store(acc=accuracy, loss=loss, local_acc=local_acc, local_loss=local_loss, status=model_status)
         self.broadcast(Events.ET_ROUND_FINISHED, round=self.context.round_id, accuracy=accuracy, loss=loss,
                        local_acc=local_acc, local_loss=local_loss)
         self.context.new_round()
@@ -115,7 +121,6 @@ class FederatedLearning(Broadcaster):
             weighted_loss = [local_loss[tid] * sample_size[tid] for tid in local_loss]
             total_accuracy = sum(weighted_accuracy) / sum(sample_size.values())
             total_loss = sum(weighted_loss) / sum(sample_size.values())
-            self.context.store(acc=total_accuracy, loss=total_loss, local_acc=local_accuracy, local_loss=local_loss)
             return total_accuracy, total_loss, local_accuracy, local_loss
 
     def compare(self, other, verbose=1):
@@ -150,7 +155,7 @@ class FederatedLearning(Broadcaster):
             'aggregator': self.aggregator,
             'client_selector': self.client_selector,
             'metrics': self.metrics,
-            'ignore_acc_decrease': self.ignore_acc_decrease,
+            'accepted_accuracy_margin': self.accepted_accuracy_margin,
             'trainers_data_dict': self.trainers_data_dict,
             'desired_accuracy': self.desired_accuracy,
             'initial_model': self.initial_model,
@@ -168,25 +173,41 @@ class FederatedLearning(Broadcaster):
         super(FederatedLearning, self).broadcast(event_name, **args)
 
     class Context:
-        def __init__(self):
+        def __init__(self, federated):
+            self.federated = federated
             self.round_id = 0
             self.model = None
-            self.num_rounds = None
-            self.desired_accuracy = None
             self.history = src.apis.extensions.Dict()
             self.timestamp = time.time()
+
+        def load_weights(self, weights):
+            self.model.load_state_dict(weights)
+
+        def model_copy(self, new_weights=None):
+            acopy = copy.deepcopy(self.model)
+            if new_weights is not None:
+                acopy.load_state_dict(new_weights)
+            return acopy
 
         def new_round(self):
             self.round_id += 1
 
+        def highest_accuracy(self):
+            if len(self.history) == 0:
+                return 0
+            return self.history[max(self.history, key=lambda k: self.history[k]['acc'])]['acc']
+
+        def latest_accuracy(self):
+            if len(self.history) == 0:
+                return 0
+            return self.history[list(self.history)[-1]]['acc']
+
         def stop(self, acc: float):
-            return (0 < self.num_rounds <= self.round_id) or acc >= self.desired_accuracy
+            return (0 < self.federated.num_rounds <= self.round_id) or acc >= self.federated.desired_accuracy
 
         def build(self, federated):
             self.reset()
             self.model = federated.initial_model() if callable(federated.initial_model) else federated.initial_model
-            self.num_rounds = federated.num_rounds
-            self.desired_accuracy = federated.desired_accuracy
 
         def reset(self):
             self.round_id = 0
@@ -199,3 +220,11 @@ class FederatedLearning(Broadcaster):
 
         def describe(self):
             return f"created at {self.timestamp}"
+
+        def update_model(self, temporary_model, accuracy, accepted_accuracy_margin):
+            highest_accuracy = self.highest_accuracy()
+            is_model_accepted = not accepted_accuracy_margin or (accuracy >= highest_accuracy) or (
+                    abs(accuracy - highest_accuracy) < accepted_accuracy_margin)
+            if is_model_accepted:
+                self.model = temporary_model
+            return is_model_accepted

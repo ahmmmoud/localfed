@@ -1,12 +1,5 @@
-import logging
 from abc import ABC, abstractmethod
-from functools import reduce
-from typing import List
-
-from torch import nn
-
 from src.apis.mpi import Comm
-from src.data.data_container import DataContainer
 from src.federated.protocols import Trainer, TrainerParams
 
 
