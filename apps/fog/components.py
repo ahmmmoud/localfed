@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple
+from typing import Tuple, List
 
 from torch import nn
 
@@ -9,7 +9,7 @@ from src.federated.components.trainer_manager import SharedTrainerProvider
 from src.federated.components.trainers import TorchChunkTrainer, TorchTrainer
 from src.federated.events import FederatedEventPlug
 from src.federated.federated import FederatedLearning
-from src.federated.protocols import TrainerParams
+from src.federated.protocols import TrainerParams, ClientSelector
 
 logger = logging.getLogger('fog components')
 
@@ -71,3 +71,17 @@ def build_federated_participants(fog_id, dataset):
             tmp_array.append(n)
         res.append(tmp_array)
     return res
+
+
+class FederatedFogClients(ClientSelector):
+    def __init__(self, arr, max_client_id):
+        self.arr = arr
+        self.max_client_id = max_client_id
+
+    def select(self, trainer_ids: List[int], round_id: FederatedLearning.Context) -> List[int]:
+        selected_trainers = self.arr[round_id.round_id]
+        res = []
+        for t in selected_trainers:
+            res.append(t % self.max_client_id)
+        return res
+        # return [0]

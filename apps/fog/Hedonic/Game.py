@@ -43,7 +43,7 @@ def print_stats_feds(providers):
 # latencies_fed = []
 # formation_type = 0 : our approach
 # formation_type = 1 : profit approach (static hedonic game by Anglano)
-def get_federated_participants(start_time, end_time, formation_type):
+def get_federated_participants(start_time, end_time, max_users, formation_type):
     res = []
     total_participants = 0
 
@@ -52,7 +52,7 @@ def get_federated_participants(start_time, end_time, formation_type):
         User.static_id = 1
         FogServer.static_id = 0
         Federation.static_id = 0
-        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, False)
+        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, max_users, False)
 
         # def calculate_latency():
         #     avg_delay_no_fed = 0
@@ -103,14 +103,14 @@ def get_federated_participants(start_time, end_time, formation_type):
     return res
 
 
-def get_participants_rate(start_time, end_time, formation_type):
+def get_participants_rate(start_time, end_time, max_users, formation_type):
     res = []
     for i in range(start_time, end_time):
         Provider.static_id = 0
         User.static_id = 1
         FogServer.static_id = 0
         Federation.static_id = 0
-        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, False)
+        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, max_users, False)
         if formation_type != 2:
             while True:
                 equilibrium = True
@@ -133,14 +133,14 @@ def get_participants_rate(start_time, end_time, formation_type):
     return res
 
 
-def get_average_latency(start_time, end_time, formation_type):
+def get_average_latency(start_time, end_time, max_users, formation_type):
     res = []
     for i in range(start_time, end_time):
         Provider.static_id = 0
         User.static_id = 1
         FogServer.static_id = 0
         Federation.static_id = 0
-        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, False)
+        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, max_users, False)
         if formation_type != 2:
             while True:
                 equilibrium = True
@@ -166,9 +166,8 @@ def get_average_latency(start_time, end_time, formation_type):
                     latency += LatencyPredictor.predict(p.fog_server, u)[0]
                 else:
                     latency += LatencyPredictor.predict(p.cloud_server, u)[0]
-        res.append(latency/users)
+        res.append(latency / users)
     return res
-
 
 # #
 # s = 0
@@ -186,7 +185,6 @@ def get_average_latency(start_time, end_time, formation_type):
 # print("part_nofed = " + str(a3))
 
 
-
 # s = 0
 # a1 = []
 # a2 = []
@@ -200,3 +198,9 @@ def get_average_latency(start_time, end_time, formation_type):
 # print("latency_our = " + str(a1))
 # print("latency_static = " + str(a2))
 # print("latency_nofed = " + str(a3))
+
+
+a = get_federated_participants(30, 31 + 10, 50, 2)
+print(a)
+a = get_federated_participants(30, 31 + 10, 50, 0)
+print(a)

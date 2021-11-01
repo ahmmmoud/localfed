@@ -14,7 +14,7 @@ file_path = __location__ + "\grid_1.tcl"
 # file_path = __lfile_path = "/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/apps/fog/Hedonic/Preprocessing" + "/grid_1.tcl"
 file_line_start = 0
 
-def extract_users(time):
+def extract_users(time, max_users):
     result = []
     with open(file_path) as f:
         for _ in range(file_line_start):
@@ -34,8 +34,10 @@ def extract_users(time):
     objectified_users = []
     for r in result:
         objectified_users.append(User(r[2], r[3]))
-    return result, objectified_users
-
+    if max_users <= 0:
+        return result, objectified_users
+    else:
+        return result[0:max_users], objectified_users[0:max_users]
 
 def create_providers(users):
     providers = []
@@ -69,8 +71,8 @@ def takeSecond(elem: User):
     return elem.id
 
 
-def get_providers_users(time, display_data=False):
-    users, objectified = extract_users(time)
+def get_providers_users(time, max_users, display_data=False):
+    users, objectified = extract_users(time, max_users)
     objectified = sorted(objectified, key=takeSecond)
     objectified_partitioned_users = partition(objectified, 12)
     providers = create_providers(objectified_partitioned_users)
