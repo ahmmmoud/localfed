@@ -10,8 +10,8 @@ from apps.fog.Hedonic.User import User
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
-# file_path = __location__ + "\grid_1.tcl"
-file_path = __lfile_path = "/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/apps/fog/Hedonic/Preprocessing" + "/grid_1.tcl"
+file_path = __location__ + "\grid_1.tcl"
+# file_path = __lfile_path = "/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/apps/fog/Hedonic/Preprocessing" + "/grid_1.tcl"
 file_line_start = 0
 
 def extract_users(time):
@@ -52,7 +52,7 @@ def create_providers(users):
             all_resources = 10
             required_resources = [9,10,11]
             providers.append(
-                Provider(FogServer(xx[i1], xx[i2], 500), users_objectified, 0.2, all_resources, required_resources[index%3]))
+                Provider(FogServer(xx[i1], xx[i2], 500), FogServer(10000, 10000, 10000), users_objectified, 0.2, all_resources, required_resources[index%3]))
             index += 1
             i2 += 1
             users_index += 1

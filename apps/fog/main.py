@@ -1,8 +1,8 @@
 import sys
 from os.path import dirname
 
-# sys.path.append(dirname(__file__) + '../../../')
-sys.path.append('/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/')
+sys.path.append(dirname(__file__) + '../../../')
+# sys.path.append('/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/')
 
 from datetime import datetime
 import logging
@@ -22,16 +22,16 @@ from src.federated.federated import FederatedLearning
 from src.federated.protocols import TrainerParams
 from src.federated.subscribers import Timer
 
-rounds = 2
+rounds = 1
 fog_providers = 1
-CLIENTS = 200
-LABELS = 30
-DATA_PER_CLIENT = 400
+CLIENTS = 1
+LABELS = 42
+DATA_PER_CLIENT = 4200*20
 DATASET = f'signs_{LABELS}shards_{CLIENTS}c_{DATA_PER_CLIENT}min_{DATA_PER_CLIENT}max'
 # print(DATASET)
-DISPLAY_OUR_METHOD = 1
+DISPLAY_OUR_METHOD = 0
 DISPLAY_OTHER_METHOD = 0
-DISPLAY_NO_FED_METHOD = 0
+DISPLAY_NO_FED_METHOD = 1
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('main')
@@ -45,7 +45,7 @@ logger.info('Generating Data --Ended')
 def create_model():
     # lr = LogisticRegression(28 * 28, 10)
     lr = resnet56(43, 1, 32)
-    lr.load_state_dict(torch.load('../../datasets/models/signs_start_20shards_1c_1000min_1000max'))
+    lr.load_state_dict(torch.load('../../datasets/models/signs_start_42shards_1c_4200'))
     # lr.eval()
     return lr
 
@@ -60,8 +60,8 @@ def get_accuracy(dataset, approach):
     fogs = []
 
     for fog in range(fog_providers):
-        trainer_params = TrainerParams(trainer_class=FederatedFogTrainer, batch_size=10, epochs=20, optimizer='sgd',
-                                       criterion='cel', lr=0.1)
+        trainer_params = TrainerParams(trainer_class=FederatedFogTrainer, batch_size=10, epochs=10, optimizer='sgd',
+                                       criterion='cel', lr=0.01)
         federated = FederatedLearning(
             trainer_manager=SeqTrainerManager(trainer_provider),
             trainer_config=trainer_params,

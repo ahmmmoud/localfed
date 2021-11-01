@@ -8,10 +8,11 @@ from apps.fog.Hedonic.FogServer import FogServer
 class Provider:
     static_id = 0
 
-    def __init__(self, fog_server: FogServer, users, satisfied_participants_rate, all_resources, required_resources):
+    def __init__(self, fog_server: FogServer, cloud_server: FogServer, users, satisfied_participants_rate, all_resources, required_resources):
         self.id = Provider.static_id
         Provider.static_id += 1
         self.fog_server: FogServer = fog_server
+        self.cloud_server: FogServer = cloud_server
         self.users = users
         self.satisfied_participants_rate = satisfied_participants_rate
         self.federation = None
