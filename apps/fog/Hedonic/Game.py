@@ -1,4 +1,4 @@
-from apps.fog.Hedonic import LatencyPredictor
+# from apps.fog.Hedonic import LatencyPredictor
 from apps.fog.Hedonic.FogServer import FogServer
 from apps.fog.Hedonic.Preprocessing import DataPreprocessor
 from apps.fog.Hedonic.Provider import Provider
@@ -133,41 +133,41 @@ def get_participants_rate(start_time, end_time, max_users, formation_type):
     return res
 
 
-def get_average_latency(start_time, end_time, max_users, formation_type):
-    res = []
-    for i in range(start_time, end_time):
-        Provider.static_id = 0
-        User.static_id = 1
-        FogServer.static_id = 0
-        Federation.static_id = 0
-        providers, total_number_of_users = DataPreprocessor.get_providers_users(i, max_users, False)
-        if formation_type != 2:
-            while True:
-                equilibrium = True
-                for p in providers:
-                    federations = [f.federation for f in providers]
-                    if formation_type == 0:
-                        changed = p.move_to_satisfactory_federation(federations)
-                    elif formation_type == 1:
-                        changed = p.move_to_satisfactory_federation_profit(federations)
-                    else:
-                        raise ValueError('unknown formation type')
-                    if changed:
-                        equilibrium = False
-                if equilibrium:
-                    break
-
-        latency = 0
-        users = sum([len(p.users) for p in providers])
-        for p in providers:
-            usrs_fed = p.get_available_users_by_federation()
-            for u in p.users:
-                if u.id in usrs_fed:
-                    latency += LatencyPredictor.predict(p.fog_server, u)[0]
-                else:
-                    latency += LatencyPredictor.predict(p.cloud_server, u)[0]
-        res.append(latency / users)
-    return res
+# def get_average_latency(start_time, end_time, max_users, formation_type):
+#     res = []
+#     for i in range(start_time, end_time):
+#         Provider.static_id = 0
+#         User.static_id = 1
+#         FogServer.static_id = 0
+#         Federation.static_id = 0
+#         providers, total_number_of_users = DataPreprocessor.get_providers_users(i, max_users, False)
+#         if formation_type != 2:
+#             while True:
+#                 equilibrium = True
+#                 for p in providers:
+#                     federations = [f.federation for f in providers]
+#                     if formation_type == 0:
+#                         changed = p.move_to_satisfactory_federation(federations)
+#                     elif formation_type == 1:
+#                         changed = p.move_to_satisfactory_federation_profit(federations)
+#                     else:
+#                         raise ValueError('unknown formation type')
+#                     if changed:
+#                         equilibrium = False
+#                 if equilibrium:
+#                     break
+#
+#         latency = 0
+#         users = sum([len(p.users) for p in providers])
+#         for p in providers:
+#             usrs_fed = p.get_available_users_by_federation()
+#             for u in p.users:
+#                 if u.id in usrs_fed:
+#                     latency += LatencyPredictor.predict(p.fog_server, u)[0]
+#                 else:
+#                     latency += LatencyPredictor.predict(p.cloud_server, u)[0]
+#         res.append(latency / users)
+#     return res
 
 # #
 # s = 0
