@@ -200,7 +200,7 @@ def get_average_latency(start_time, end_time, max_users, formation_type):
 # print("latency_nofed = " + str(a3))
 
 
-a = get_federated_participants(30, 31 + 10, 50, 2)
-print(a)
-a = get_federated_participants(30, 31 + 10, 50, 0)
-print(a)
+# a = get_federated_participants(30, 31 + 10, 10, 2)
+# print(a)
+# a = get_federated_participants(30, 31 + 10, 50, 0)
+# print(a)
