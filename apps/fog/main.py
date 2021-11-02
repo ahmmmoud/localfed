@@ -2,8 +2,10 @@ import os
 import pickle
 import sys
 from os.path import dirname
+# sys.path.append(dirname(__file__) + '../../../')
+sys.path.append('/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/')
 
-from libs.model.linear.lr import LogisticRegression
+# from libs.model.linear.lr import LogisticRegression
 from src.apis.rw import IODict
 from src.data.data_distributor import LabelDistributor
 from src.federated.subscribers.logger import FederatedLogger
@@ -11,8 +13,6 @@ from src.federated.subscribers.resumable import Resumable
 from src.federated.subscribers.sqlite_logger import SQLiteLogger
 from src.federated.subscribers.timer import Timer
 
-sys.path.append(dirname(__file__) + '../../../')
-# sys.path.append('/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/')
 
 from datetime import datetime
 import logging
