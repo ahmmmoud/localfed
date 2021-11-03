@@ -2,8 +2,8 @@ import os
 import pickle
 import sys
 from os.path import dirname
-# sys.path.append(dirname(__file__) + '../../../')
-sys.path.append('/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/')
+sys.path.append(dirname(__file__) + '../../../')
+# sys.path.append('/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/')
 
 # from libs.model.linear.lr import LogisticRegression
 from src.apis.rw import IODict
@@ -32,16 +32,16 @@ from src.federated.protocols import TrainerParams
 import torch
 print(torch.cuda.is_available())
 
-rounds = 30
-fog_providers = 1
-CLIENTS = 1
+rounds = 50
+fog_providers = 12
+CLIENTS = 50
 LABELS = 42
-DATA_PER_CLIENT = 20000
-# DATASET = f'signs_{LABELS}shards_{CLIENTS}c_{DATA_PER_CLIENT}min_{DATA_PER_CLIENT}max'
-DATASET = 'signs'
-DISPLAY_OUR_METHOD = 0
+DATA_PER_CLIENT = 400
+DATASET = f'signs_{LABELS}shards_{CLIENTS}c_{DATA_PER_CLIENT}min_{DATA_PER_CLIENT}max'
+# DATASET = 'signs'
+DISPLAY_OUR_METHOD = 1
 DISPLAY_OTHER_METHOD = 0
-DISPLAY_NO_FED_METHOD = 1
+DISPLAY_NO_FED_METHOD = 0
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('main')

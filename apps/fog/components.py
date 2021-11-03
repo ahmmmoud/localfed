@@ -1,4 +1,5 @@
 import logging
+import random
 from typing import Tuple, List
 
 from torch import nn
@@ -83,5 +84,15 @@ class FederatedFogClients(ClientSelector):
         res = []
         for t in selected_trainers:
             res.append(t % self.max_client_id)
+
+        #Add a random trainer for the sake of not being empty
+        non_empty_rounds = [x for x in self.arr if len(x) > 0]
+        if len(non_empty_rounds) == 0:
+            res.append(0)
+        else:
+            r_t = random.choice(non_empty_rounds)
+            random_trainer = random.choice(r_t)
+            res.append(random_trainer)
+
         return res
         # return [0]
