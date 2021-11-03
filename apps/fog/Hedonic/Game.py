@@ -49,7 +49,7 @@ def get_federated_participants(start_time, end_time, max_users, formation_type):
 
     for i in range(start_time, end_time):
         Provider.static_id = 0
-        User.static_id = 1
+        User.static_id = 0
         FogServer.static_id = 0
         Federation.static_id = 0
         providers, total_number_of_users = DataPreprocessor.get_providers_users(i, max_users, False)
@@ -107,7 +107,7 @@ def get_participants_rate(start_time, end_time, max_users, formation_type):
     res = []
     for i in range(start_time, end_time):
         Provider.static_id = 0
-        User.static_id = 1
+        User.static_id = 0
         FogServer.static_id = 0
         Federation.static_id = 0
         providers, total_number_of_users = DataPreprocessor.get_providers_users(i, max_users, False)

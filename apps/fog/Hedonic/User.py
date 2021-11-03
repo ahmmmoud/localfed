@@ -2,7 +2,7 @@ from apps.fog.Hedonic.Geolocationized import Geolocationized
 
 
 class User(Geolocationized):
-    static_id = 1
+    static_id = 0
 
     def __init__(self, x, y):
         super().__init__(x, y)
