@@ -58,8 +58,6 @@ def plotter(lines, axis_limit, x_label, y_label, rounds):
     plt.ylabel(y_label)
     plt.legend()
     plt.grid(True)
-    plt.xticks(range(0, rounds))
-    plt.yticks(range(0, 100, 5))
     plt.show()
 
 
@@ -78,21 +76,23 @@ class FederatedFogClients(ClientSelector):
     def __init__(self, arr, max_client_id):
         self.arr = arr
         self.max_client_id = max_client_id
+        # self.add_random_participant = add_random_participant
 
     def select(self, trainer_ids: List[int], round_id: FederatedLearning.Context) -> List[int]:
         selected_trainers = self.arr[round_id.round_id]
         res = []
         for t in selected_trainers:
             res.append(t % self.max_client_id)
-
-        #Add a random trainer for the sake of not being empty
-        non_empty_rounds = [x for x in self.arr if len(x) > 0]
-        if len(non_empty_rounds) == 0:
-            res.append(0)
-        else:
-            r_t = random.choice(non_empty_rounds)
-            random_trainer = random.choice(r_t)
-            res.append(random_trainer)
+        # if self.add_random_participant:
+        #     #Add a random trainer for the sake of not being empty
+        #     non_empty_rounds = [x for x in self.arr if len(x) > 0]
+        #     if len(non_empty_rounds) == 0:
+        #         res.append(0)
+        #     else:
+        #         r_t = random.choice(non_empty_rounds)
+        #         random_trainer = random.choice(r_t)
+        #         res.append(random_trainer)
 
         return res
         # return [0]
+        # return range(10)

@@ -5,7 +5,7 @@ from os.path import dirname
 # sys.path.append(dirname(__file__) + '../../../')
 sys.path.append('/home/ahmmmoud/projects/def-zdziong/ahmmmoud/localfed/')
 
-# from libs.model.linear.lr import LogisticRegression
+from libs.model.linear.lr import LogisticRegression
 from src.apis.rw import IODict
 from src.data.data_distributor import LabelDistributor
 from src.federated.subscribers.logger import FederatedLogger
@@ -29,15 +29,15 @@ from src.federated.federated import Events
 from src.federated.federated import FederatedLearning
 from src.federated.protocols import TrainerParams
 
-rounds = 50
+rounds = 100
 fog_providers = 12
-CLIENTS = 50
-LABELS = 42
-DATA_PER_CLIENT = 4000
+CLIENTS = 100
+LABELS = 30
+DATA_PER_CLIENT = 2000
 DATASET = 'signs'
-DISPLAY_OUR_METHOD = 1
+DISPLAY_OUR_METHOD = 0
 DISPLAY_OTHER_METHOD = 0
-DISPLAY_NO_FED_METHOD = 0
+DISPLAY_NO_FED_METHOD = 1
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('main')
@@ -81,7 +81,7 @@ def get_accuracy(qos_vehicles_per_provider):
     fogs = []
 
     for fog in range(fog_providers):
-        trainer_params = TrainerParams(trainer_class=FederatedFogTrainer, batch_size=20, epochs=10, optimizer='sgd',
+        trainer_params = TrainerParams(trainer_class=FederatedFogTrainer, batch_size=20, epochs=1, optimizer='sgd',
                                        criterion='cel', lr=0.01)
         federated = FederatedLearning(
             trainer_manager=SeqTrainerManager(trainer_provider),
@@ -141,4 +141,4 @@ if DISPLAY_NO_FED_METHOD == 1:
 print(data_acc)
 plotter(data_acc, [0, rounds, 0, 1], 'Round', 'Average Test Accuracy', rounds)
 print(data_loss)
-plotter(data_loss, [0, rounds, 0, 100], 'Round', 'Average Model Loss', rounds)
+plotter(data_loss, [0, rounds, 0, 10], 'Round', 'Average Model Loss', rounds)

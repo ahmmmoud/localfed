@@ -200,7 +200,9 @@ def get_participants_rate(start_time, end_time, max_users, formation_type):
 # print("latency_nofed = " + str(a3))
 
 
-# a = get_federated_participants(30, 31 + 10, 10, 2)
-# print(a)
-# a = get_federated_participants(30, 31 + 10, 50, 0)
-# print(a)
+a = get_federated_participants(30, 31 + 10, 100, 0)
+print(a)
+a = get_federated_participants(30, 31 + 10, 100, 1)
+print(a)
+a = get_federated_participants(30, 31 + 10, 100, 2)
+print(a)
